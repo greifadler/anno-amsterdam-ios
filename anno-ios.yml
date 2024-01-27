@@ -1,0 +1,72 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'macos-latest'
+
+steps:
+- script: |
+    ls /Applications | grep 'Xcode'
+  displayName: 'List installed Xcode versions'
+
+- task: Xcode@5
+  inputs:
+    actions: 'build'
+    scheme: 'ios-app'
+    sdk: 'iphoneos'
+    configuration: 'Release'
+    xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
+    xcodeVersion: 'specifyPath'
+    xcodeDeveloperDir: '/Applications/Xcode_14.2.app/Contents/Developer' 
+
+# Install CocoaPods dependencies
+- script: pod install
+  displayName: 'Install CocoaPods dependencies'
+
+# Running tests with Xcode
+- task: Xcode@5
+  inputs:
+    actions: 'test'
+    scheme: 'ios-app' # Your test scheme name
+    sdk: 'iphonesimulator'
+    configuration: 'Debug'
+    xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
+    xcodeVersion: 'default'
+
+# Archive the app
+- task: Xcode@5
+  inputs:
+    actions: 'archive'
+    archivePath: '$(Build.ArtifactStagingDirectory)/ios-app.xcarchive'
+    scheme: 'ios-app' # Specify your scheme name here
+    sdk: 'iphoneos'
+    configuration: 'Release'
+    xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
+    xcodeVersion: 'default'
+
+# Export the .ipa file
+- task: Xcode@5
+  inputs:
+    actions: 'export'
+    archivePath: '$(Build.ArtifactStagingDirectory)/ios-app.xcarchive'
+    exportPath: '$(Build.ArtifactStagingDirectory)/ios-app.ipa'
+    exportOptionsPlist: 'ios-app/Info.plist' # Create this file to specify export options
+    xcodeVersion: 'default'
+
+# Publish build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
+
+# Deploy to TestFlight using Fastlane
+#- script: fastlane deploy
+#  displayName: 'Deploy to TestFlight'
+#  env:
+#    FASTLANE_USER: $(AppStoreConnectUsername)
+#    FASTLANE_PASSWORD: $(AppStoreConnectPassword)
+#    FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: $(AppSpecificPassword)
+#    FASTLANE_SESSION: $(FastlaneSession)
+#    MATCH_PASSWORD: $(MatchPassword)
+#    FASTLANE_TEAM_ID: $(AppleTeamID)
+#    FASTLANE_ITC_TEAM_ID: $(AppleITCTeamID)
