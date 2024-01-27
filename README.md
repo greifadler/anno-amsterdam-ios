@@ -1,4 +1,4 @@
-# The Reader
+# Anno Amsterdam - iOS SwiftUI
 
 A mobile application for the residents & tourists of Amsterdam to discover and learn more about the historic buildings using AR.
 
