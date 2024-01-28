@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     private func setupMyApp() {
         // TODO: Add any intialization steps here.
-        //GMSServices.provideAPIKey("AIzaSyCO9TqyRFRaPahsjpExgy2oc4L0fnc2Y_w")
+        //GMSServices.provideAPIKey("...")
 
         print("Application started up!")
     }
